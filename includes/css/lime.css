@@ -29,7 +29,7 @@ body {
 }
 
 .sidebar .info {
-  border-bottom: 1px solid #4783c2;
+  border-bottom: 2px dashed #43C6AC;
 }
 
 .sidebar .skill-line .progress {
@@ -51,7 +51,7 @@ body {
 ***** Work Experience  *****
 */
 .custom-content-wrapper {
-  border-bottom: 1px solid #bdbdbd;
+  border-bottom: 2px dashed #43C6AC;
 }
 
 .custom-content-wrapper span, .blue-title {
