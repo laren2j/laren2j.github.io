@@ -54,7 +54,7 @@ body {
   border-bottom: 1px solid #bdbdbd;
 }
 
-.custom-content-wrapper span {
+.custom-content-wrapper span, .blue-title {
   color: #5da4d9;
 }
 
