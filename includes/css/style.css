@@ -221,9 +221,10 @@ body {
 
 .sidebar .heading nav .button-collapse i {
     height: 30px;
-    font-size: 18pt;
+    font-size: 30pt;
     line-height: 24pt;
-    background-color: #5da4d9;
+    color: #5da4d9 !important; 
+    background-color: #ffffff !important; 
     margin-top: 20px;
     padding: 0px 6px;
 }
@@ -342,6 +343,13 @@ body {
 
 .sidebar .skill-line span {
     opacity: initial;
+}
+
+.sidebar .side-nav li a i {
+    width: 27%;
+    float: left;
+    height: 64px;
+    line-height: 64px;
 }
 
 
@@ -862,4 +870,11 @@ input[type=text]:focus:not([readonly])+label, input[type=password]:focus:not([re
 
 .project-information li a {
     color: #5da4d9;
+}
+
+
+h1, h2, .section-icon i, .interests ul li i{
+  background: -webkit-linear-gradient(#314755, #26a0da);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }

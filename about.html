@@ -1,385 +1,48 @@
 <!DOCTYPE html>
-<!-- saved from url=(0047)http://demo.deviserweb.com/cv/cover-latter.html -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script>(function blockPopupsFunc(scriptId, popupBlockMessage, showNotification, extensionId, rules) {
-    var popupAllowedRegex = /^(http(s)?:)?\/\/([^\/]*\.)?(pinterest\.com|twitter\.com|paypal\.com|yahoo\.com|facebook\.com|linkedin\.com|salesforce\.com|amazon\.co|google\.co)/i;
-    var popupAllowHosts = /^http(s):\/\/([^\/]*\.)?(search\.yahoo\.com|linkedin\.com|facebook\.com|drive\.google\.com)/i;
-    var anchorPopupsExcludedHosts = { 'sh.st': true };
-    var popupRegexRules = null;
-    var stndz = {
-        active: true,
-        originalWindowOpen: window.open,
-        originalDocumentCreateElement: document.createElement
-    };
-
-    function isPopup(url) {
-        if (!url)
-            return null;
-
-        if (popupAllowedRegex.test(url))
-            return false;
-
-        if (popupRegexRules == null) {
-            popupRegexRules = [];
-            for (var i = 0; i < rules.length; i++) {
-                popupRegexRules.push(new RegExp(rules[i], "i"));
-            }
-        }
-
-        for (var i = 0; i < popupRegexRules.length; i++) {
-            if (popupRegexRules[i].test(url))
-                return true;
-        }
-
-        if (popupAllowHosts.test(location.href))
-            return false;
-
-        return null;
-    }
-
-    window.open = function() {
-        if (stndz.active == false) {
-            return stndz.originalWindowOpen.apply(window, arguments);
-        }
-
-        var popupArguments = arguments;
-        var openPopupFunc = function() {
-            return stndz.originalWindowOpen.apply(window, popupArguments);
-        };
-
-        var popupUrl = arguments.length >= 1 && arguments[0] && typeof arguments[0] == "string" ? arguments[0] : null;
-        var block = isPopup(popupUrl);
-        if (block) {
-            showPopupNotificationWindow('ad-popup', arguments, openPopupFunc);
-            return {};
-        } else if (block == false) {
-            return openPopupFunc();
-        }
-
-        if (popupUrl.indexOf('data:') == 0) {
-            showPopupNotificationWindow('data-popup', arguments, openPopupFunc);
-            return {};
-        }
-
-        var targetName = arguments.length >= 2 ? arguments[1] : null;
-        if (targetName == '_parent' || targetName == '_self' || targetName == '_top')
-            return openPopupFunc();
-
-        if (!window.event)
-            return openPopupFunc();
-
-        if (popupUrl) {
-            try {
-                if (popupUrl.indexOf("/") == 0 && popupUrl.indexOf("//") != 0)
-                    return openPopupFunc();
-
-                var windowOpenUrl = new URL(popupUrl);
-                if (windowOpenUrl.host.indexOf(window.location.host) > -1 || (windowOpenUrl.host != "" && window.location.host.indexOf(windowOpenUrl.host) > -1))
-                    return openPopupFunc();
-            } catch(e) { }
-        }
-
-        var currentTargetValid = window.event &&
-            window.event.currentTarget &&
-            window.event.currentTarget !== window &&
-            window.event.currentTarget !== document &&
-            window.event.currentTarget !== document.body;
-
-        var targetValid = window.event &&
-            window.event.target &&
-            window.event.target.tagName == 'A' &&
-            window.event.target.href.indexOf('http') == 0;
-
-        if (currentTargetValid || targetValid)
-            return openPopupFunc();
-
-        if (showNotification)
-            showPopupNotificationWindow('not-user-initiated', arguments, openPopupFunc);
-
-        return {};
-    };
-
-    document.createElement = function() {
-        var element = stndz.originalDocumentCreateElement.apply(document, arguments);
-        if (element.tagName == 'A') {
-            var now = new Date();
-            var handleAnchorClick = function(event) {
-                if (stndz.active == false)
-                    return;
-
-                if (anchorPopupsExcludedHosts[document.location.host]) {
-                    element.target = "_top";
-                } else {
-                    var block = isPopup(element.href);
-                    if (block || (new Date() - now < 50 && block == null && window.location.hostname.indexOf(element.hostname || null) == -1)) {
-                        event.preventDefault();
-                        showPopupNotificationWindow('create-link', element.href, function() { element.click(); });
-                    }
-                }
-            };
-
-            element.addEventListener('click', handleAnchorClick, true);
-        }
-
-        return element;
-    };
-
-    window.stndzStopPopupBlocking = function(iframeGuid) {
-        if (popupBlockMessage.iframeGuid == iframeGuid) {
-            stndz.active = false;
-        }
-    };
-
-    window.stndzResumePopupBlocking = function(iframeGuid) {
-        if (popupBlockMessage.iframeGuid == iframeGuid) {
-            stndz.active = true;
-        }
-    };
-
-    window.addEventListener("message", function(event) {
-        switch (event.data.type) {
-            case 'stndz-show-popup-notification':
-                if (window !== window.top)
-                    return;
-
-                stndz.stndzPopupActionWindow = event.source;
-                stndz.stndzPopupClicked = function(option) {
-                    stndz.hidePopupNotification();
-                    stndz.stndzPopupActionWindow.postMessage({type: 'stndz-popup-action', option: option}, event.origin);
-                };
-
-                if (stndz.popupNotificationOpen) {
-                    stndz.highlightPopupNotification();
-                } else if (stndz.popupNotificationOpen === false) { // if it was previously opened just show it, the delegate to open the new window was created above
-                    stndz.showPopupNotification();
-                } else {
-                    var notificationElement = createNotificationOnPage();
-
-                    stndz.showPopupNotification = function() {
-                        stndz.popupNotificationOpen = true;
-
-                        notificationElement.style.top = '0px';
-
-                        var hidePopupNotificationId;
-                        stndz.hidePopupNotification = function() {
-                            stndz.popupNotificationOpen = false;
-                            notificationElement.style.top = '-40px';
-                            notificationElement.style.height = '30px';
-                            clearTimeout(hidePopupNotificationId);
-                        };
-
-                        hidePopupNotificationId = setTimeout(stndz.hidePopupNotification, 30 * 1000);
-                        notificationElement.onmouseover = function() {
-                            clearTimeout(hidePopupNotificationId);
-                        };
-                    };
-
-                    var helpOpen = false;
-                    var originalBackground = notificationElement.style.background;
-                    stndz.highlightPopupNotification = function() {
-                        notificationElement.style.background = '#FFFBCC';
-                        setTimeout(function() {
-                            notificationElement.style.background = originalBackground;
-                        }, 1000);
-
-                        notificationElement.style.height = '120px';
-                        helpOpen = true;
-                    };
-
-                    stndz.togglePopupNotificationHelp = function() {
-                        notificationElement.style.height = helpOpen ? '30px' : '120px';
-                        helpOpen = !helpOpen;
-                    };
-
-                    stndz.showPopupNotification();
-                }
-
-                break;
-
-            case 'stndz-popup-action':
-                stndz.stndzPopupAction && stndz.stndzPopupAction(event.data.option);
-                break;
-        }
-    }, false);
-
-    function showPopupNotificationWindow(blockType, args, openPopupFunc) {
-        if (!showNotification)
-            return;
-
-        stndz.stndzPopupAction = function(option) {
-            popupBlockMessage.arguments = JSON.stringify(args);
-            popupBlockMessage.option = option;
-            window.postMessage(popupBlockMessage, '*');
-
-            if (option == 'once' || option == 'allow') {
-                stndz.active = false;
-                openPopupFunc && openPopupFunc();
-            } else {
-                showNotification = false;
-            }
-        };
-
-        window.top.postMessage({
-            type: 'stndz-show-popup-notification',
-            iframeGuid: popupBlockMessage.iframeGuid,
-            blockType: blockType
-        }, '*');
-
-        window.postMessage({
-            type: 'popup-blocked',
-            iframeGuid: popupBlockMessage.iframeGuid,
-            blockType: blockType,
-            arguments: encodeURIComponent(args)
-        }, '*');
-    }
-
-    function createNotificationOnPage() {
-        var style = document.createElement('style');
-        style.textContent = '.stndz-popup-notification {' +
-        'width: 670px;' +
-        'height: 30px;' +
-        'position: fixed;' +
-        'overflow: hidden;' +
-        'top: -40px;' +
-        'margin: 0 auto;' +
-        'z-index: 2147483647;' +
-        'left: 0px;' +
-        'right: 0px;' +
-        'background: rgb(240, 240, 240);' +
-        'border-radius: 0px 0px 5px 5px;' +
-        'border: solid 1px #999999;' +
-        'box-shadow: 0px 2px 5px #444444;' +
-        'border-top: none; ' +
-        'line-height: 31px;' +
-        'font-size: 12px;' +
-        'font-family: sans-serif;' +
-        'color: #59595c;' +
-        'text-align: center;' +
-        'direction: ltr;' +
-        'transition-duration: 500ms;}' +
-        '.stndz-button {' +
-        'all: unset;' +
-        'padding: 3px 15px !important;' +
-        'border: solid 1px #a4a6aa !important;' +
-        'height: 25px !important;' +
-        'border-radius: 5px !important;' +
-        'background-color: #3058b0 !important;' +
-        'background: linear-gradient(#f5f5f5, #dfdfdf) !important;' +
-        'box-shadow: inset 0px 1px 0px #ffffff, inset 0 -1px 2px #acacac !important;' +
-        'color: #555555 !important;' +
-        'font-size: 12px !important;' +
-        'line-height: 16px !important;' +
-        'font-family: sans-serif !important;' +
-        'text-align: center !important;' +
-        'background-repeat: no-repeat !important;' +
-        'text-decoration: none !important;}' +
-        '.stndz-button:hover{' +
-        'all: unset;' +
-        'background: linear-gradient(#eeeeee, #d1d1d1) !important;' +
-        'text-decoration: none !important;' +
-        'color: #555555 !important;}';
-        document.documentElement.appendChild(style);
-
-        var div = document.createElement('div');
-        div.setAttribute('class', 'stndz-popup-notification');
-        div.innerHTML = '<img src="chrome-extension://' + extensionId + '/views/web_accessible/images/icon.png" style="top: 5px; left: 5px;height: 20px; display: initial;position: absolute;">' +
-        '&nbsp;<b>Site Popup Blocked:</b>' +
-        '&nbsp;&nbsp;<a href="javascript:void(0)" id="stndz-popup-allow-once" class="stndz-button">Allow once</a>' +
-        '&nbsp;&nbsp;<a href="javascript:void(0)" id="stndz-popup-allow" class="stndz-button">Allow always</a>' +
-        '&nbsp;&nbsp;<a href="javascript:void(0)" id="stndz-popup-block" class="stndz-button">Block always</a>' +
-        '&nbsp;&nbsp;&nbsp;&nbsp;<a href="javascript:void(0)" id="stndz-popup-help"><img src="chrome-extension://' + extensionId + '/views/web_accessible/images/help.png" style="opacity: 0.3; position: absolute; top: 7px; display: initial;right: 30px;" /></a>' +
-        '&nbsp;<a href="javascript:void(0)" id="stndz-popup-close"><img src="chrome-extension://' + extensionId + '/views/web_accessible/images/close.png" style="opacity: 0.3; position: absolute; top: 7px; display: initial;right: 7px;" /></a>' +
-        '<br /><div style="line-height: 22px; text-align: left; padding: 0px 5px 0px 5px; font-size: 11px;">The site tried to open a popup and Stands blocked it.' +
-        '<br />if you don\'t trust this site you should click <b>"Block always"</b>, if you do click <b>"Allow always"</b>.' +
-        '<br />If you\'re not sure click <b>"Allow once"</b> which will open the popup and pause popup blocking for the current page visit.' +
-        '<br />You can always change your settings in the application window.</div>';
-        document.body.appendChild(div);
-
-        document.getElementById("stndz-popup-allow-once").addEventListener("click", function(event) { event.preventDefault(); stndz.stndzPopupClicked("once") }, true);
-        document.getElementById("stndz-popup-allow").addEventListener("click", function(event) { event.preventDefault(); stndz.stndzPopupClicked("allow") }, true);
-        document.getElementById("stndz-popup-block").addEventListener("click", function(event) { event.preventDefault(); stndz.stndzPopupClicked("block") }, true);
-        document.getElementById("stndz-popup-help").addEventListener("click", function(event) { event.preventDefault(); stndz.togglePopupNotificationHelp() }, true);
-        document.getElementById("stndz-popup-close").addEventListener("click", function(event) { event.preventDefault(); stndz.hidePopupNotification(); }, true);
-
-        return div;
-    }
-
-    var thisScript = document.getElementById(scriptId);
-    if (thisScript)
-        thisScript.parentElement.removeChild(thisScript);
-
-    try {
-        Object.defineProperty(window,"ExoLoader",{configurable:false,get:function(){return null;},set:function(){return null;}});
-    } catch(e) {}
-})('8159862367201',{"type":"popup-user-action","iframeGuid":"Hs5hA7Jw9NebfM7w9Sot5tFkG9Yvm0Y1NEDg"},true, 'lgblnfidahcdcjddiepkckcfdhpknnjh', ["directrev\\.com","tradeadexchange\\.com","liveadexchanger\\.com","interyield\\.","ordingly\\.com","peritas247\\.info","goodbookbook\\.com","word-my\\.com","terraclicks\\.com","tracki112\\.com","popped","ahtamsu\\.ru","startnewtab\\.com","onclickads\\.net","europacash\\.com","wordkeyhelper\\.com","d1110e4\\.se","buzzonclick\\.com","adultadworld\\.com","3wr110\\.net","ads\\.xladzop\\.com","mtagmonetizationc\\.com","ad\\.propellerads\\.com","popmyads\\.com","popunderclick\\.com","pipeaota\\.com","expocrack\\.com","trafficforce\\.com","poprockets\\.info","trustedsurf\\.com","smartnewtab\\.com","wonderlandads\\.com","admediatracker\\.com","n\\d{3}adserv\\.com","adland\\.co","adexc\\.net","buzzadexchange\\.com","104\\.197\\.4\\.220","xmediaserve\\.com","popcash\\.net","adpop-\\d\\.com","adk2x\\.com","adplxmd\\.com","exoclick\\.com","bounceads\\.net","whoads\\.net","onclickpredictiv\\.com","installation\\.club","advertiserurl\\.com","pureadexchange\\.com","adsrvmedia\\.net","linkmyc\\.com","popmycash\\.com","clickppcbuzz\\.com","adsxn\\.com","bestadbid\\.com","clickadu\\.com","adxpansion\\.com","med4ad\\.com","appnord\\.xyz","rutorads\\.com","104\\.197\\.140\\.120","buzzadnetwork\\.com","qrlsx\\.com","pipsol\\.net","prosoftwarepc\\.com","performanceadexchange\\.com","buy-targeted-traffic\\.com","104\\.154\\.237\\.93","tabcontent\\.net","popunder\\.[a-z]{2,4}","popads\\.[a-z]{2,4}","wwwpromoter\\.com","([^\\/\\.]*\\.)([^\\/\\.]*\\.)711\\d*\\.com","isanalyze\\.com","adrunnr\\.com","trackpprofile\\.com","adnetworkperformance\\.com","104\\.197\\.199\\.227","traffic-media\\.co"]);</script><style></style>
-        
-        
+<html lang="en">
+    <head>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
         <!-- TITLE OF SITE-->
-        <title> Lionel A. Dsouza </title>
-        
+        <title>
+            Lionel A. Dsouza
+        </title>
         <!-- META TAG -->
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="CV, Portfolio, Resume">
-        <meta name="author" content="Lionel A. Dsouza| Web Developer">
-        
+        <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+        <meta content="CV, Portfolio, Resume" name="description"/>
+        <meta content="Lionel A. Dsouza| Web Developer" name="author"/>
         <!-- FAVICON -->
-        <link rel="icon" href="assets/images/favicon.ico">
-        <link rel="apple-touch-icon" sizes="72x72" href="assets/images/apple-icon-72x72.png">
-        <link rel="apple-touch-icon" sizes="76x76" href="assets/images/apple-icon-76x76.png">
-        <link rel="apple-touch-icon" sizes="114x114" href="assets/images/apple-icon-114x114.png">
-
+        <link href="assets/images/favicon.ico" rel="icon"/>
+        <link href="assets/images/apple-icon-72x72.png" rel="apple-touch-icon" sizes="72x72"/>
+        <link href="assets/images/apple-icon-76x76.png" rel="apple-touch-icon" sizes="76x76"/>
+        <link href="assets/images/apple-icon-114x114.png" rel="apple-touch-icon" sizes="114x114"/>
         <!-- ========================================
                 Stylesheets
-        ==========================================--> 
-        
+        ==========================================-->
         <!-- MATERIALIZE CORE CSS -->
-        <link href="includes/css/materialize.min.css" rel="stylesheet">
-        
-
+        <link href="includes/css/materialize.min.css" rel="stylesheet"/>
         <!-- ADDITIONAL CSS -->
-        <link rel="stylesheet" href="includes/css/animate.css">
-        
-
-        <!-- FONTS -->
-        <link href="includes/css/css" rel="stylesheet" type="text/css">
-        
-
+        <link href="includes/css/animate.css" rel="stylesheet"/>
         <!--FONTAWESOME CSS-->
-        <link href="includes/css/font-awesome.min.css" rel="stylesheet" type="text/css"> 
-        
-
+        <link href="includes/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
         <!-- CUSTOM STYLE -->
-        <link href="includes/css/style.css" rel="stylesheet">
-        <link href="includes/css/main.css" rel="stylesheet">
-
+        <link href="includes/css/style.css" rel="stylesheet"/>
+        <link href="includes/css/main.css" rel="stylesheet"/>
         <!-- RESPONSIVE CSS-->
-        <link href="includes/css/responsive.css" rel="stylesheet">
-
+        <link href="includes/css/responsive.css" rel="stylesheet"/>
         <!-- FONT AWESOME CDN CSS -->
-        <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
-
-        <!-- COLORS -->        
-        <!-- <link rel="alternate stylesheet" href="http://demo.deviserweb.com/cv/assets/css/colors/red.css" title="red" disabled="">
-        <link rel="alternate stylesheet" href="http://demo.deviserweb.com/cv/assets/css/colors/purple.css" title="purple" disabled="">
-        <link rel="alternate stylesheet" href="http://demo.deviserweb.com/cv/assets/css/colors/orange.css" title="orange" disabled="">
-        <link rel="alternate stylesheet" href="http://demo.deviserweb.com/cv/assets/css/colors/green.css" title="green" disabled=""> -->
-        <link rel="stylesheet" href="includes/css/lime.css" title="lime">
-
-        
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
+        <!-- COLORS -->
+        <link href="includes/css/lime.css" rel="stylesheet" title="lime"/>
         <!-- STYLE SWITCH STYLESHEET ONLY FOR DEMO -->
-        <link rel="stylesheet" href="includes/css/demo.css">
-        
+        <link href="includes/css/demo.css" rel="stylesheet"/>
         <!--[if lt IE 9]><script src="assets/js/ie8-responsive-file-warning.js"></script><![endif] -->
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!--[if lt IE 9]>
           <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
           <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
         <![endif]-->
-        
-    <script type="text/javascript" charset="UTF-8" src="includes/js/common.js"></script>
-    <script type="text/javascript" charset="UTF-8" src="includes/js/util.js"></script>
-    <script type="text/javascript" charset="UTF-8" src="includes/js/stats.js"></script>
-
     </head>
+</html>
     <body>
         <!-- Start Container-->
         <div class="container">
@@ -406,17 +69,32 @@
                             <div class=" nav-icon">
                                 <nav>
                                     <div class="nav-wrapper">
-                                      <ul id="nav-mobile" class="side-nav" style="left: -250px;">                                  
-                                        <li><a href="index.html">Resume</a></li>                                        
-                                        <li><a href="about.html">About</a></li>
-                                        <li><a href="portfolio.html">Portfolio</a></li>
-                                        <!-- <li><a href="blog.html">Blog</a></li> -->
-                                        <!-- <li><a href="contact.html">Contact</a></li> -->
-                                      </ul>
-                                      <a href="index.html#" data-activates="nav-mobile" class="button-collapse"><i class="fa fa-bars fa-lg"></i></a>
+                                        <ul class="side-nav" id="nav-mobile" style="left: -250px;">
+                                            <li>
+                                                <a href="index.html">
+                                                    <i class="fa fa-file-text-o" aria-hidden="true"></i> Resume
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="about.html">
+                                                    <i class="fa fa-user" aria-hidden="true"></i> About
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="portfolio.html">
+                                                    <i class="fa fa-folder-open-o" aria-hidden="true"></i> Portfolio
+                                                </a>
+                                            </li>
+                                            <!-- <li><a href="blog.html">Blog</a></li> -->
+                                            <!-- <li><a href="contact.html">Contact</a></li> -->
+                                        </ul>
+                                        <a class="button-collapse" data-activates="nav-mobile" href="index.html#">
+                                            <i class="fa fa-bars fa-lg">
+                                            </i>
+                                        </a>
                                     </div>
                                 </nav>
-                            </div>                                                    
+                            </div>                                                
                         </div>
                         <div class="col l12 m12 s12 sort-info sidebar-item">
                             <div class="row">                                                              
@@ -454,10 +132,6 @@
                                             <h4><a href="tel:603-275-4714">(603)-275-4714</a></h4> <!-- Number -->             
                                             <span>mobile</span> 
                                         </div>
-                                        <!-- <div class="work">
-                                            <h4><a href="tel:603-275-4714">(603)-275-4714</a></h4>
-                                            <span>work</span> 
-                                        </div> -->
                                     </div>
                                 </div>
                             </div>             
@@ -474,10 +148,6 @@
                                             <h4><a href="mailto:laren2j@gmail.com">laren2j@gmail.com</a></h4> <!-- Email -->
                                             <span>personal</span> 
                                         </div>
-                                        <!-- <div class="work">                                 
-                                            <h4><a href="mailto:laren2j@gmail.com">laren2j@gmail.com</a></h4>
-                                            <span>work</span> <br>
-                                        </div> -->
                                     </div>
                                 </div> 
                             </div>          
@@ -499,53 +169,7 @@
                                 </div>
                             </div>            
                         </div>
-                        <!-- SKILLS -->
-                        <!-- <div class="col l12 m12 s12  skills sidebar-item">
-                            <div class="row">
-                                <div class="col m12 l3 s12 icon">
-                                    <i class="fa fa-calendar-o"></i>
-                                </div>
-                                
-                                <div class="col m12 l9 s12 skill-line a5 wow fadeIn" data-wow-delay="0.5s" style="visibility: hidden; animation-delay: 0.5s; animation-name: none;">
-                                    <h3>Professional Skills </h3>
-                                    
-                                    <span>Twitter Bootstrap</span>                                    
-                                    <div class="progress">
-                                        <div class="determinate" style="width: 70%;"><i class="fa fa-circle"></i></div>
-                                    </div>
-                                    
-                                    <span>HTML 5</span>
-                                    <div class="progress">
-                                        <div class="determinate" style="width: 95%;"><i class="fa fa-circle"></i></div>
-                                    </div>
-                                    
-                                    <span>CSS 3</span>
-                                    <div class="progress">
-                                        <div class="determinate" style="width: 90%;"><i class="fa fa-circle"></i></div>
-                                    </div>
 
-                                    <span>Javascript</span>
-                                    <div class="progress">
-                                        <div class="determinate" style="width: 85%;"><i class="fa fa-circle"></i></div>
-                                    </div>
-
-                                    <span>PHP</span>
-                                    <div class="progress">
-                                        <div class="determinate" style="width: 70%;"><i class="fa fa-circle"></i></div>
-                                    </div>
-
-                                    <span>Angular.JS</span>
-                                    <div class="progress">
-                                        <div class="determinate" style="width: 55%;"><i class="fa fa-circle"></i></div>
-                                    </div>
-
-                                    <span>JSON</span>
-                                    <div class="progress">
-                                        <div class="determinate" style="width: 40%;"><i class="fa fa-circle"></i></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> -->
                     </div>   <!-- end row -->
                 </aside><!-- end sidebar -->
             <!-- ========================================
@@ -614,77 +238,32 @@
                                     <li><a target="_blank" href="https://github.com/laren2j"><i class="fa fa-github tooltipped" data-position="top" data-delay="50" data-tooltip="GitHub Profile"></i></a></li>
                                     <li><a target="_blank" href="https://gitlab.com/u/laren2j"><i class="fa fa-gitlab tooltipped" data-position="top" data-delay="50" data-tooltip="GitLab Profile"></i></a></li>
                                     <li><a target="_blank" href="https://in.linkedin.com/in/lionel-aaron-d-souza-b89a474a"><i class="fa fa-linkedin tooltipped" data-position="top" data-delay="50" data-tooltip="LinkedIn Profile"></i></a></li>
-                                    <li><a target="_blank" href="https://angel.co/lionel-aaron-d-souza" download><i class="fa fa-angellist tooltipped" data-position="top" data-delay="50" data-tooltip="Angel List"></i></a></li>
+                                    <li><a target="_blank" href="https://angel.co/lionel-aaron-d-souza"><i class="fa fa-angellist tooltipped" data-position="top" data-delay="50" data-tooltip="Angel List"></i></a></li>
                                     <li><a target="_blank" href="includes/Resume-Lionel.docx" download><i class="fa fa-file-text tooltipped" data-position="top" data-delay="50" data-tooltip="Portfolio"></i></a></li>
                                 </ul>
                             </div>                          
                         </div>
                 </section>
             </div><!-- end row -->
-        </div> <!-- end container -->
-        <!--=====================
-                JavaScript
-        ===================== -->
-        <!-- Jquery core js-->
-        <script src="includes/js/jquery.min.js"></script>
-        
-        <!-- materialize js-->
-        <script src="includes/js/materialize.min.js"></script>
-        
-        <!-- wow js-->
-        <script src="includes/js/wow.min.js"></script>
-        
-        <!-- Map api -->
-        <!-- <script src="includes/js/js"></script> -->
-        
-        <!-- Masonry js-->
-        <script src="includes/js/masonry.pkgd.js"></script>
-
-        <script src="includes/js/validator.min.js"></script>
-        
-        <!-- Customized js -->
-        <script src="includes/js/init.js"></script>
+        </div> 
+    <!-- end container -->
+    <!--=====================
+            JavaScript
+    ===================== -->
+    <!-- Jquery core js-->
+    <script src="includes/js/jquery.min.js">
+    </script>
+    <!-- materialize js-->
+    <script src="includes/js/materialize.min.js">
+    </script>
+    <!-- wow js-->
+    <script src="includes/js/wow.min.js">
+    </script>
+    <!-- Masonry js-->
+    <script src="includes/js/masonry.pkgd.js">
+    </script>
     
-        <!-- =========================================================
-            STYLE SWITCHER | ONLY FOR DEMO NOT INCLUDED IN MAIN FILES
-        ===========================================================-->
-        
-        <!-- Style switter js -->
-        <script src="includes/js/styleswitcher.js"></script>
-        
-        <!-- <div class="cv-style-switch" id="switch-style">
-            <a id="toggle-switcher" class="switch-button icon_tools"> <i class="fa fa-cogs"></i></a>
-            <div class="switched-options">                
-                <div class="config-title">
-                    Colors :
-                </div>
-                <ul class="styles">
-                    <li><a href="index.html#" onclick="setActiveStyleSheet(&#39;red&#39;); return false;" title="Red">
-                    <div class="red"></div>
-                    </a></li>                    
-                    
-                    <li><a href="index.html#" onclick="setActiveStyleSheet(&#39;purple&#39;); return false;" title="purple">
-                    <div class="purple"></div>
-                    </a></li>
-
-                    <li><a href="index.html#" onclick="setActiveStyleSheet(&#39;orange&#39;); return false;" title="orange">
-                    <div class="orange"></div>
-                    </a></li>
-                    
-                    <li><a href="index.html#" onclick="setActiveStyleSheet(&#39;green&#39;); return false;" title="green">
-                    <div class="green"></div>
-                    </a></li>
-                    
-                    <li><a href="index.html#" onclick="setActiveStyleSheet(&#39;lime&#39;); return false;" title="lime">
-                    <div class="lime"></div>
-                    </a></li>
-
-                    <li class="p">
-                        ( NOTE: Pre Defined Colors. You can change colors very easily )
-                    </li>
-                </ul>
-            </div>
-        </div> -->
-
-    
-<div class="hiddendiv common"></div><div class="drag-target" style="left: 0px; touch-action: pan-y; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></div></body></html>
+    <!-- Customized js -->
+    <script src="includes/js/init.js">
+    </script>
+</body>
